@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stack Tools — Profils d'Absorption v2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e8e8e8;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+        
+        /* Routes d'absorption */
+        .routes-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .routes-section h2 {
+            color: #00d9ff;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+        }
+        
+        .routes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .route-card {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 4px solid;
+        }
+        
+        .route-card.pulmonaire {
+            border-color: #ff6b6b;
+        }
+        
+        .route-card.sublingual {
+            border-color: #4ecdc4;
+        }
+        
+        .route-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .route-card.pulmonaire h3 { color: #ff6b6b; }
+        .route-card.sublingual h3 { color: #4ecdc4; }
+        
+        .route-path {
+            font-size: 0.85rem;
+            color: #aaa;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+        }
+        
+        .route-path .arrow {
+            color: #666;
+        }
+        
+        .route-stats {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .stat {
+            flex: 1;
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .stat-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        /* Substance cards */
+        .substances-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .substance-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        
+        .substance-header {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .substance-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .nicotine .substance-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .nicotine .substance-icon { background: rgba(255,255,255,0.2); }
+        
+        .thc-low .substance-header { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+        .thc-low .substance-icon { background: rgba(255,255,255,0.2); }
+        
+        .thc-high .substance-header { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .thc-high .substance-icon { background: rgba(255,255,255,0.2); }
+        
+        .cbd .substance-header { background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%); }
+        .cbd .substance-icon { background: rgba(255,255,255,0.2); }
+        
+        .substance-title {
+            color: #fff;
+        }
+        
+        .substance-title h3 {
+            font-size: 1.3rem;
+            margin-bottom: 3px;
+        }
+        
+        .substance-title .config {
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+        
+        .substance-body {
+            padding: 20px;
+        }
+        
+        .timing-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .timing-item {
+            flex: 1;
+            background: rgba(0,0,0,0.3);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .timing-item .label {
+            font-size: 0.7rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+        
+        .timing-item .value {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        
+        .nicotine .timing-item .value { color: #667eea; }
+        .thc-low .timing-item .value { color: #38ef7d; }
+        .thc-high .timing-item .value { color: #f5576c; }
+        .cbd .timing-item .value { color: #4ecdc4; }
+        
+        .effects-section h4 {
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .effects-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .effect-tag {
+            background: rgba(255,255,255,0.1);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+        
+        .nicotine .effect-tag { border: 1px solid rgba(102, 126, 234, 0.5); }
+        .thc-low .effect-tag { border: 1px solid rgba(56, 239, 125, 0.5); }
+        .thc-high .effect-tag { border: 1px solid rgba(245, 87, 108, 0.5); }
+        .cbd .effect-tag { border: 1px solid rgba(78, 205, 196, 0.5); }
+        
+        /* Molecules section */
+        .molecules-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .molecules-section h2 {
+            color: #00ff88;
+            margin-bottom: 10px;
+            font-size: 1.4rem;
+        }
+        
+        .molecules-section .section-note {
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+        
+        .molecules-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .molecules-table th,
+        .molecules-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .molecules-table th {
+            color: #888;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .molecules-table td {
+            font-size: 0.95rem;
+        }
+        
+        .molecule-name {
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        .percentage {
+            color: #00ff88;
+            font-weight: bold;
+        }
+        
+        .temp-tag {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        
+        .temp-low {
+            background: rgba(56, 239, 125, 0.2);
+            color: #38ef7d;
+        }
+        
+        .temp-high {
+            background: rgba(245, 87, 108, 0.2);
+            color: #f5576c;
+        }
+        
+        .temp-mid {
+            background: rgba(255, 217, 61, 0.2);
+            color: #ffd93d;
+        }
+        
+        /* Terpenes section */
+        .terpenes-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .terpenes-section h2 {
+            color: #f093fb;
+            margin-bottom: 10px;
+            font-size: 1.4rem;
+        }
+        
+        .terpenes-section .section-note {
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+        
+        .terpenes-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .terpenes-table th,
+        .terpenes-table td {
+            padding: 14px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .terpenes-table th {
+            color: #888;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .terpenes-table td {
+            font-size: 0.95rem;
+        }
+        
+        .terpene-name {
+            font-weight: bold;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .terpene-icon {
+            font-size: 1.2rem;
+        }
+        
+        .aroma {
+            color: #aaa;
+            font-size: 0.85rem;
+        }
+        
+        .effects-cell {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        
+        .effect-mini {
+            background: rgba(240, 147, 251, 0.15);
+            border: 1px solid rgba(240, 147, 251, 0.3);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: #f093fb;
+        }
+        
+        .vapo-indicator {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .vapo-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .vapo-dot.blue {
+            background: #38ef7d;
+            box-shadow: 0 0 8px rgba(56, 239, 125, 0.5);
+        }
+        
+        .vapo-dot.red {
+            background: #f5576c;
+            box-shadow: 0 0 8px rgba(245, 87, 108, 0.5);
+        }
+        
+        .vapo-dot.both {
+            background: linear-gradient(135deg, #38ef7d 50%, #f5576c 50%);
+        }
+        
+        /* Dosage section */
+        .dosage-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .dosage-section h2 {
+            color: #ff6b6b;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+        }
+        
+        .dosage-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+        }
+        
+        .dosage-card {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 25px;
+            border-top: 4px solid;
+        }
+        
+        .dosage-card.nicotine-dose { border-color: #667eea; }
+        .dosage-card.thc-dose { border-color: #f5576c; }
+        .dosage-card.cbd-dose { border-color: #4ecdc4; }
+        
+        .dosage-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .dosage-card.nicotine-dose h3 { color: #667eea; }
+        .dosage-card.thc-dose h3 { color: #f5576c; }
+        .dosage-card.cbd-dose h3 { color: #4ecdc4; }
+        
+        .dose-table {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .dose-table td {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            vertical-align: top;
+        }
+        
+        .dose-table td:first-child {
+            font-weight: bold;
+            color: #fff;
+            width: 80px;
+        }
+        
+        .dose-table td:nth-child(2) {
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        
+        .dose-table td:last-child {
+            text-align: right;
+            font-size: 0.85rem;
+        }
+        
+        .receptor-bar {
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        
+        .receptor-fill {
+            height: 100%;
+            border-radius: 4px;
+        }
+        
+        .nicotine-dose .receptor-fill { background: linear-gradient(90deg, #667eea, #764ba2); }
+        .thc-dose .receptor-fill { background: linear-gradient(90deg, #f093fb, #f5576c); }
+        .cbd-dose .receptor-fill { background: linear-gradient(90deg, #4ecdc4, #44a08d); }
+        
+        .timing-rule {
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .timing-rule h4 {
+            font-size: 0.85rem;
+            color: #ffd93d;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .timing-rule p {
+            color: #aaa;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .warning-box {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .warning-box h4 {
+            color: #ff6b6b;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .warning-box p {
+            color: #aaa;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        /* Usage guide */
+        .usage-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 30px;
+        }
+        
+        .usage-section h2 {
+            color: #ffd93d;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+        }
+        
+        .usage-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .usage-card {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .usage-card h4 {
+            color: #ffd93d;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+        
+        .usage-card p {
+            color: #aaa;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .usage-card .tool {
+            display: inline-block;
+            background: rgba(255, 217, 61, 0.2);
+            color: #ffd93d;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            margin-top: 10px;
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #666;
+            font-size: 0.85rem;
+        }
+        
+        .footer .date {
+            color: #888;
+        }
+        
+        .version-tag {
+            display: inline-block;
+            background: rgba(0, 217, 255, 0.2);
+            color: #00d9ff;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-top: 10px;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            h1 { font-size: 1.8rem; }
+            .routes-grid, .substances-grid, .dosage-grid { grid-template-columns: 1fr; }
+            .timing-bar { flex-direction: column; }
+            .terpenes-table, .molecules-table { font-size: 0.85rem; }
+            .terpenes-table th, .terpenes-table td,
+            .molecules-table th, .molecules-table td { padding: 10px 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Stack Tools — Profils d'Absorption</h1>
+        <p class="subtitle">NLR & Aurore — Sevrage J25 coke / J2 kéta</p>
+        
+        <!-- Routes d'absorption -->
+        <section class="routes-section">
+            <h2>🔄 Routes d'Absorption</h2>
+            <div class="routes-grid">
+                <div class="route-card pulmonaire">
+                    <h3>🌬️ Pulmonaire (vape)</h3>
+                    <div class="route-path">
+                        Alvéoles <span class="arrow">→</span> Capillaires pulmonaires <span class="arrow">→</span> Veines pulmonaires <span class="arrow">→</span> Cœur gauche <span class="arrow">→</span> Aorte <span class="arrow">→</span> Carotides <span class="arrow">→</span> <strong>Cerveau</strong>
+                    </div>
+                    <div class="route-stats">
+                        <div class="stat">
+                            <div class="stat-label">Passages cœur</div>
+                            <div class="stat-value">1</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Onset</div>
+                            <div class="stat-value">10-15s</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Avantage</div>
+                            <div class="stat-value">Rapidité</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="route-card sublingual">
+                    <h3>👅 Sublingual</h3>
+                    <div class="route-path">
+                        Muqueuse <span class="arrow">→</span> Veines sublinguales <span class="arrow">→</span> Veine jugulaire <span class="arrow">→</span> Cœur droit <span class="arrow">→</span> Poumons <span class="arrow">→</span> Cœur gauche <span class="arrow">→</span> <strong>Cerveau</strong>
+                    </div>
+                    <div class="route-stats">
+                        <div class="stat">
+                            <div class="stat-label">Passages cœur</div>
+                            <div class="stat-value">2</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Onset</div>
+                            <div class="stat-value">2-5min</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Avantage</div>
+                            <div class="stat-value">Bypass foie</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Substance Cards -->
+        <section class="substances-grid">
+            <!-- Nicotine -->
+            <div class="substance-card nicotine">
+                <div class="substance-header">
+                    <div class="substance-icon">🌫️</div>
+                    <div class="substance-title">
+                        <h3>Nicotine MTL</h3>
+                        <div class="config">Sels 20mg • 1.2Ω • 10W</div>
+                    </div>
+                </div>
+                <div class="substance-body">
+                    <div class="timing-bar">
+                        <div class="timing-item">
+                            <div class="label">Route</div>
+                            <div class="value">Pulmonaire</div>
+                        </div>
+                        <div class="timing-item">
+                            <div class="label">Onset</div>
+                            <div class="value">10-15s</div>
+                        </div>
+                        <div class="timing-item">
+                            <div class="label">Durée</div>
+                            <div class="value">30-60min</div>
+                        </div>
+                    </div>
+                    <div class="effects-section">
+                        <h4>Effets</h4>
+                        <div class="effects-list">
+                            <span class="effect-tag">Focus court</span>
+                            <span class="effect-tag">Éveil</span>
+                            <span class="effect-tag">Craving control</span>
+                            <span class="effect-tag">Geste oral</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- THC 180° -->
+            <div class="substance-card thc-low">
+                <div class="substance-header">
+                    <div class="substance-icon">🔵</div>
+                    <div class="substance-title">
+                        <h3>THC — Vapo Bleu</h3>
+                        <div class="config">180°C • Cali US NLR</div>
+                    </div>
+                </div>
+                <div class="substance-body">
+                    <div class="timing-bar">
+                        <div class="timing-item">
+                            <div class="label">Route</div>
+                            <div class="value">Pulmonaire</div>
+                        </div>
+                        <div class="timing-item">
+                            <div class="label">Onset</div>
+                            <div class="value">1-3min</div>
+                        </div>
+                        <div class="timing-item">
+                            <div class="label">Pic</div>
+                            <div class="value">10-15min</div>
+                        </div>
+                        <div class="timing-item">
+                            <div class="label">Durée</div>
+                            <div class="value">1-2h</div>
+                        </div>
+                    </div>
+                    <div class="effects-section">
+                        <h4>Effets (terpènes légers)</h4>
+                        <div class="effects-list">
+                            <span class="effect-tag">Focus léger</span>
+                            <span class="effect-tag">Cérébral</span>
+                            <span class="effect-tag">Stimulant</span>
+                            <span class="effect-tag">Créativité</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- THC 230° -->
+            <div class="substance-card thc-high">
+                <div class="substance-header">
+                    <div class="substance-icon">🔴</div>
+                    <div class="substance-title">
+                        <h3>THC — Vapo Rouge</h3>
+                        <div class="config">230°C • Cali US NLR</div>
+                    </div>
+                </div>
+                <div class="substance-body">
+                    <div class="timing-bar">
+                        <div class="timing-item">
+                            <div class="label">Route</div>
+                            <div class="value">Pulmonaire</div>
+                        </div>
+                        <div class="timing-item">
+                            <div class="label">Onset</div>
+                            <div class="value">1-3min</div>
+                        </div>
+                        <div class="timing-item">
+                            <div class="label">Pic</div>
+                            <div class="value">20-30min</div>
+                        </div>
+                        <div class="timing-item">
+                            <div class="label">Durée</div>
+                            <div class="value">2-4h</div>
+                        </div>
+                    </div>
+                    <div class="effects-section">
+                        <h4>Effets (terpènes lourds + CBN 2%)</h4>
+                        <div class="effects-list">
+                            <span class="effect-tag">Sédation marquée</span>
+                            <span class="effect-tag">Anxiolytique</span>
+                            <span class="effect-tag">Décontraction</span>
+                            <span class="effect-tag">Proprioception</span>
+                            <span class="effect-tag">Idéation</span>
+                            <span class="effect-tag">Body high</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- CBD -->
+            <div class="substance-card cbd">
+                <div class="substance-header">
+                    <div class="substance-icon">💧</div>
+                    <div class="substance-title">
+                        <h3>CBD Isolat</h3>
+                        <div class="config">Sublingual • Boiron recommandé</div>
+                    </div>
+                </div>
+                <div class="substance-body">
+                    <div class="timing-bar">
+                        <div class="timing-item">
+                            <div class="label">Route</div>
+                            <div class="value">Sublingual</div>
+                        </div>
+                        <div class="timing-item">
+                            <div class="label">Onset</div>
+                            <div class="value">15-30min</div>
+                        </div>
+                        <div class="timing-item">
+                            <div class="label">Pic</div>
+                            <div class="value">1-2h</div>
+                        </div>
+                        <div class="timing-item">
+                            <div class="label">Durée</div>
+                            <div class="value">4-6h</div>
+                        </div>
+                    </div>
+                    <div class="effects-section">
+                        <h4>Effets</h4>
+                        <div class="effects-list">
+                            <span class="effect-tag">Anxiolytique</span>
+                            <span class="effect-tag">Anti-inflammatoire</span>
+                            <span class="effect-tag">Fond calme</span>
+                            <span class="effect-tag">Non-psychoactif</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Profil Cali US -->
+        <section class="molecules-section">
+            <h2>🧬 Profil Cali US NLR — Composition calibrée</h2>
+            <p class="section-note">Estimation basée sur effets observés (Aurore = capteur sédation)</p>
+            <table class="molecules-table">
+                <thead>
+                    <tr>
+                        <th>Molécule</th>
+                        <th>%</th>
+                        <th>Notes</th>
+                        <th>Extraction</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="molecule-name">THC</td>
+                        <td class="percentage">~25%</td>
+                        <td>Cali premium standard</td>
+                        <td><span class="temp-tag temp-low">157°C+</span></td>
+                    </tr>
+                    <tr>
+                        <td class="molecule-name">CBD</td>
+                        <td class="percentage">&lt;0.5%</td>
+                        <td>Bred out, quasi absent</td>
+                        <td><span class="temp-tag temp-low">160-180°C</span></td>
+                    </tr>
+                    <tr>
+                        <td class="molecule-name">CBN</td>
+                        <td class="percentage">~2%</td>
+                        <td>Sédatif marqué — confirmé par Aurore</td>
+                        <td><span class="temp-tag temp-mid">185°C+</span></td>
+                    </tr>
+                    <tr>
+                        <td class="molecule-name">CBG</td>
+                        <td class="percentage">~0.5%</td>
+                        <td>Précurseur, effets subtils</td>
+                        <td><span class="temp-tag temp-low">52°C+</span></td>
+                    </tr>
+                    <tr>
+                        <td class="molecule-name">Terpènes totaux</td>
+                        <td class="percentage">~4%</td>
+                        <td>Profil mixte (voir détail ci-dessous)</td>
+                        <td><span class="temp-tag temp-mid">155-230°C</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        
+        <!-- Terpenes Detail -->
+        <section class="terpenes-section">
+            <h2>🌿 Profil Terpénique Détaillé — Cali US NLR</h2>
+            <p class="section-note">Chaque terpène a une température d'ébullition spécifique → différents effets selon le mode vapo</p>
+            <table class="terpenes-table">
+                <thead>
+                    <tr>
+                        <th>Terpène</th>
+                        <th>Arôme</th>
+                        <th>Temp.</th>
+                        <th>Vapo</th>
+                        <th>Effets</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="terpene-name">
+                                <span class="terpene-icon">🌲</span>
+                                α-Pinène
+                            </div>
+                        </td>
+                        <td class="aroma">Pin, sapin</td>
+                        <td><span class="temp-tag temp-low">155°C</span></td>
+                        <td>
+                            <div class="vapo-indicator">
+                                <span class="vapo-dot blue"></span>
+                                <span class="vapo-dot red"></span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="effects-cell">
+                                <span class="effect-mini">Focus</span>
+                                <span class="effect-mini">Mémoire</span>
+                                <span class="effect-mini">Bronchodilatateur</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="terpene-name">
+                                <span class="terpene-icon">🍋</span>
+                                Limonène
+                            </div>
+                        </td>
+                        <td class="aroma">Citron, agrumes</td>
+                        <td><span class="temp-tag temp-low">176°C</span></td>
+                        <td>
+                            <div class="vapo-indicator">
+                                <span class="vapo-dot blue"></span>
+                                <span class="vapo-dot red"></span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="effects-cell">
+                                <span class="effect-mini">Humeur ↑</span>
+                                <span class="effect-mini">Anti-stress</span>
+                                <span class="effect-mini">Énergie</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="terpene-name">
+                                <span class="terpene-icon">🌸</span>
+                                β-Caryophyllène
+                            </div>
+                        </td>
+                        <td class="aroma">Poivre, épicé</td>
+                        <td><span class="temp-tag temp-low">160°C</span></td>
+                        <td>
+                            <div class="vapo-indicator">
+                                <span class="vapo-dot blue"></span>
+                                <span class="vapo-dot red"></span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="effects-cell">
+                                <span class="effect-mini">Anti-inflammatoire</span>
+                                <span class="effect-mini">Anxiolytique</span>
+                                <span class="effect-mini">Liaison CB2</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="terpene-name">
+                                <span class="terpene-icon">🥭</span>
+                                Myrcène
+                            </div>
+                        </td>
+                        <td class="aroma">Mangue, terreux</td>
+                        <td><span class="temp-tag temp-mid">168°C</span></td>
+                        <td>
+                            <div class="vapo-indicator">
+                                <span class="vapo-dot blue"></span>
+                                <span class="vapo-dot red"></span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="effects-cell">
+                                <span class="effect-mini">Sédatif</span>
+                                <span class="effect-mini">Relaxant musculaire</span>
+                                <span class="effect-mini">Potentialise THC</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="terpene-name">
+                                <span class="terpene-icon">💜</span>
+                                Linalol
+                            </div>
+                        </td>
+                        <td class="aroma">Lavande, floral</td>
+                        <td><span class="temp-tag temp-high">198°C</span></td>
+                        <td>
+                            <div class="vapo-indicator">
+                                <span class="vapo-dot red"></span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="effects-cell">
+                                <span class="effect-mini">Sédatif fort</span>
+                                <span class="effect-mini">Anti-anxiété</span>
+                                <span class="effect-mini">Analgésique</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="terpene-name">
+                                <span class="terpene-icon">🌿</span>
+                                Humulène
+                            </div>
+                        </td>
+                        <td class="aroma">Houblon, boisé</td>
+                        <td><span class="temp-tag temp-mid">198°C</span></td>
+                        <td>
+                            <div class="vapo-indicator">
+                                <span class="vapo-dot red"></span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="effects-cell">
+                                <span class="effect-mini">Anti-inflammatoire</span>
+                                <span class="effect-mini">Coupe-faim</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="terpene-name">
+                                <span class="terpene-icon">🫖</span>
+                                Terpinolène
+                            </div>
+                        </td>
+                        <td class="aroma">Herbal, floral</td>
+                        <td><span class="temp-tag temp-high">218°C</span></td>
+                        <td>
+                            <div class="vapo-indicator">
+                                <span class="vapo-dot red"></span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="effects-cell">
+                                <span class="effect-mini">Sédatif léger</span>
+                                <span class="effect-mini">Antioxydant</span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div style="margin-top: 20px; display: flex; gap: 30px; color: #888; font-size: 0.85rem;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="vapo-dot blue"></span> Extrait à 180°C (Vapo Bleu)
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="vapo-dot red"></span> Extrait à 230°C (Vapo Rouge)
+                </div>
+            </div>
+        </section>
+        
+        <!-- Dosage & Timing -->
+        <section class="dosage-section">
+            <h2>⏱️ Dosage & Timing — Éviter le surdosage</h2>
+            <div class="dosage-grid">
+                <!-- Nicotine dosage -->
+                <div class="dosage-card nicotine-dose">
+                    <h3>🌫️ Nicotine — Saturation rapide</h3>
+                    <table class="dose-table">
+                        <tr>
+                            <td>1 hit</td>
+                            <td>~40% récepteurs occupés</td>
+                            <td>
+                                <div class="receptor-bar"><div class="receptor-fill" style="width: 40%"></div></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2 hits</td>
+                            <td>~70% occupation — proche plateau</td>
+                            <td>
+                                <div class="receptor-bar"><div class="receptor-fill" style="width: 70%"></div></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>3+ hits</td>
+                            <td>~90% saturation — rendements ↓↓</td>
+                            <td>
+                                <div class="receptor-bar"><div class="receptor-fill" style="width: 90%"></div></div>
+                            </td>
+                        </tr>
+                    </table>
+                    <div class="timing-rule">
+                        <h4>⏰ Règle de timing</h4>
+                        <p><strong>1 hit → attendre 5-10 min → 2ème si besoin</strong><br>
+                        Enchaîner = gaspillage. Espacer = prolonger l'effet.</p>
+                    </div>
+                </div>
+                
+                <!-- THC dosage -->
+                <div class="dosage-card thc-dose">
+                    <h3>🔴 THC — Accumulation lente</h3>
+                    <table class="dose-table">
+                        <tr>
+                            <td>1 hit</td>
+                            <td>Dose X — effet contrôlable</td>
+                            <td>
+                                <div class="receptor-bar"><div class="receptor-fill" style="width: 35%"></div></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2 hits</td>
+                            <td>~1.8X — significativement plus fort</td>
+                            <td>
+                                <div class="receptor-bar"><div class="receptor-fill" style="width: 65%"></div></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>3+ hits</td>
+                            <td>Accumulation — risque anxiogène</td>
+                            <td>
+                                <div class="receptor-bar"><div class="receptor-fill" style="width: 90%"></div></div>
+                            </td>
+                        </tr>
+                    </table>
+                    <div class="timing-rule">
+                        <h4>⏰ Règle de timing</h4>
+                        <p><strong>1 hit → attendre 15 min minimum → évaluer → décider</strong><br>
+                        Le THC monte pendant 15-30 min. Juger trop tôt = surdosage.</p>
+                    </div>
+                    <div class="warning-box">
+                        <h4>⚠️ Piège CBN 2%</h4>
+                        <p>Votre Cali US a un CBN élevé → pic retardé (20-30 min, pas 10).<br>
+                        <strong>Aurore :</strong> attendre 30 min avant 2ème hit. Le premier n'a pas encore peaké.</p>
+                    </div>
+                </div>
+                
+                <!-- CBD dosage -->
+                <div class="dosage-card cbd-dose">
+                    <h3>💧 CBD Sublingual — Fond lent</h3>
+                    <table class="dose-table">
+                        <tr>
+                            <td>Onset</td>
+                            <td>15-30 min — patience requise</td>
+                            <td>
+                                <div class="receptor-bar"><div class="receptor-fill" style="width: 20%"></div></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Pic</td>
+                            <td>1-2h — effet maximal</td>
+                            <td>
+                                <div class="receptor-bar"><div class="receptor-fill" style="width: 80%"></div></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Durée</td>
+                            <td>4-6h — fond stable</td>
+                            <td>
+                                <div class="receptor-bar"><div class="receptor-fill" style="width: 50%"></div></div>
+                            </td>
+                        </tr>
+                    </table>
+                    <div class="timing-rule">
+                        <h4>⏰ Règle de timing</h4>
+                        <p><strong>Dose matinale → couvre jusqu'à l'après-midi</strong><br>
+                        Pas besoin de re-doser fréquemment. Fond anxiolytique stable.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Usage Guide -->
+        <section class="usage-section">
+            <h2>🎯 Guide d'Usage — Sevrage</h2>
+            <div class="usage-grid">
+                <div class="usage-card">
+                    <h4>Craving aigu</h4>
+                    <p>Hit rapide pour interrompre la boucle de pensée. Timer 20 min.</p>
+                    <span class="tool">Nicotine MTL</span>
+                </div>
+                <div class="usage-card">
+                    <h4>Anxiété de fond</h4>
+                    <p>Effet long, non-psychoactif. Compatible avec travail.</p>
+                    <span class="tool">CBD sublingual</span>
+                </div>
+                <div class="usage-card">
+                    <h4>Focus / Travail</h4>
+                    <p>Cérébral, stimulant léger. Terpènes légers (pinène, limonène).</p>
+                    <span class="tool">THC 180°C</span>
+                </div>
+                <div class="usage-card">
+                    <h4>Détente / Sommeil</h4>
+                    <p>Corps, sédation (CBN + linalol + myrcène). Pic lent 20-30 min.</p>
+                    <span class="tool">THC 230°C</span>
+                </div>
+                <div class="usage-card">
+                    <h4>Reset nerveux</h4>
+                    <p>Système nerveux autonome. Gratuit, immédiat.</p>
+                    <span class="tool">Eau froide visage</span>
+                </div>
+                <div class="usage-card">
+                    <h4>Co-régulation</h4>
+                    <p>Présence physique. Le système nerveux se régule à deux.</p>
+                    <span class="tool">Contact humain</span>
+                </div>
+            </div>
+        </section>
+        
+        <footer class="footer">
+            <p>Stack personnel — usage médical informé</p>
+            <p class="date">Janvier 2025</p>
+            <span class="version-tag">v2.0 — Profil Cali US calibré</span>
+        </footer>
+    </div>
+</body>
+</html>

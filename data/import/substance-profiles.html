@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stack Tools — Profils d'Absorption</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e8e8e8;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+        
+        /* Routes d'absorption */
+        .routes-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .routes-section h2 {
+            color: #00d9ff;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+        }
+        
+        .routes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .route-card {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 4px solid;
+        }
+        
+        .route-card.pulmonaire {
+            border-color: #ff6b6b;
+        }
+        
+        .route-card.sublingual {
+            border-color: #4ecdc4;
+        }
+        
+        .route-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .route-card.pulmonaire h3 { color: #ff6b6b; }
+        .route-card.sublingual h3 { color: #4ecdc4; }
+        
+        .route-path {
+            font-size: 0.85rem;
+            color: #aaa;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+        }
+        
+        .route-path .arrow {
+            color: #666;
+        }
+        
+        .route-stats {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .stat {
+            flex: 1;
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .stat-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        /* Substance cards */
+        .substances-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .substance-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        
+        .substance-header {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .substance-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .nicotine .substance-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .nicotine .substance-icon { background: rgba(255,255,255,0.2); }
+        
+        .thc-low .substance-header { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+        .thc-low .substance-icon { background: rgba(255,255,255,0.2); }
+        
+        .thc-high .substance-header { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .thc-high .substance-icon { background: rgba(255,255,255,0.2); }
+        
+        .cbd .substance-header { background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%); }
+        .cbd .substance-icon { background: rgba(255,255,255,0.2); }
+        
+        .substance-title {
+            color: #fff;
+        }
+        
+        .substance-title h3 {
+            font-size: 1.3rem;
+            margin-bottom: 3px;
+        }
+        
+        .substance-title .config {
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+        
+        .substance-body {
+            padding: 20px;
+        }
+        
+        .timing-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .timing-item {
+            flex: 1;
+            background: rgba(0,0,0,0.3);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .timing-item .label {
+            font-size: 0.7rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+        
+        .timing-item .value {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        
+        .nicotine .timing-item .value { color: #667eea; }
+        .thc-low .timing-item .value { color: #38ef7d; }
+        .thc-high .timing-item .value { color: #f5576c; }
+        .cbd .timing-item .value { color: #4ecdc4; }
+        
+        .effects-section h4 {
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .effects-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .effect-tag {
+            background: rgba(255,255,255,0.1);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+        
+        .nicotine .effect-tag { border: 1px solid rgba(102, 126, 234, 0.5); }
+        .thc-low .effect-tag { border: 1px solid rgba(56, 239, 125, 0.5); }
+        .thc-high .effect-tag { border: 1px solid rgba(245, 87, 108, 0.5); }
+        .cbd .effect-tag { border: 1px solid rgba(78, 205, 196, 0.5); }
+        
+        /* Molecules section */
+        .molecules-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .molecules-section h2 {
+            color: #00ff88;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+        }
+        
+        .molecules-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .molecules-table th,
+        .molecules-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .molecules-table th {
+            color: #888;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .molecules-table td {
+            font-size: 0.95rem;
+        }
+        
+        .molecule-name {
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        .percentage {
+            color: #00ff88;
+            font-weight: bold;
+        }
+        
+        /* Usage guide */
+        .usage-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 30px;
+        }
+        
+        .usage-section h2 {
+            color: #ffd93d;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+        }
+        
+        .usage-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .usage-card {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .usage-card h4 {
+            color: #ffd93d;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+        
+        .usage-card p {
+            color: #aaa;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .usage-card .tool {
+            display: inline-block;
+            background: rgba(255, 217, 61, 0.2);
+            color: #ffd93d;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            margin-top: 10px;
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #666;
+            font-size: 0.85rem;
+        }
+        
+        .footer .date {
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Stack Tools — Profils d'Absorption</h1>
+        <p class="subtitle">NLR & Aurore — Sevrage J25 coke / J2 kéta</p>
+        
+        <!-- Routes d'absorption -->
+        <section class="routes-section">
+            <h2>🔄 Routes d'Absorption</h2>
+            <div class="routes-grid">
+                <div class="route-card pulmonaire">
+                    <h3>🌬️ Pulmonaire (vape)</h3>
+                    <div class="route-path">
+                        Alvéoles <span class="arrow">→</span> Capillaires pulmonaires <span class="arrow">→</span> Veines pulmonaires <span class="arrow">→</span> Cœur gauche <span class="arrow">→</span> Aorte <span class="arrow">→</span> Carotides <span class="arrow">→</span> <strong>Cerveau</strong>
+                    </div>
+                    <div class="route-stats">
+                        <div class="stat">
+                            <div class="stat-label">Passages cœur</div>
+                            <div class="stat-value">1</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Onset</div>
+                            <div class="stat-value">10-15s</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Avantage</div>
+                            <div class="stat-value">Rapidité</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="route-card sublingual">
+                    <h3>👅 Sublingual</h3>
+                    <div class="route-path">
+                        Muqueuse <span class="arrow">→</span> Veines sublinguales <span class="arrow">→</span> Veine jugulaire <span class="arrow">→</span> Cœur droit <span class="arrow">→</span> Poumons <span class="arrow">→</span> Cœur gauche <span class="arrow">→</span> <strong>Cerveau</strong>
+                    </div>
+                    <div class="route-stats">
+                        <div class="stat">
+                            <div class="stat-label">Passages cœur</div>
+                            <div class="stat-value">2</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Onset</div>
+                            <div class="stat-value">2-5min</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Avantage</div>
+                            <div class="stat-value">Bypass foie</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Substance Cards -->
+        <section class="substances-grid">
+            <!-- Nicotine -->
+            <div class="substance-card nicotine">
+                <div class="substance-header">
+                    <div class="substance-icon">🌫️</div>
+                    <div class="substance-title">
+                        <h3>Nicotine MTL</h3>
+                        <div class="config">Sels 20mg • 1.2Ω • 10W</div>
+                    </div>
+                </div>
+                <div class="substance-body">
+                    <div class="timing-bar">
+                        <div class="timing-item">
+                            <div class="label">Route</div>
+                            <div class="value">Pulmonaire</div>
+                        </div>
+                        <div class="timing-item">
+                            <div class="label">Onset</div>
+                            <div class="value">10-15s</div>
+                        </div>
+                        <div class="timing-item">
+                            <div class="label">Durée</div>
+                            <div class="value">30-60min</div>
+                        </div>
+                    </div>
+                    <div class="effects-section">
+                        <h4>Effets</h4>
+                        <div class="effects-list">
+                            <span class="effect-tag">Focus court</span>
+                            <span class="effect-tag">Éveil</span>
+                            <span class="effect-tag">Craving control</span>
+                            <span class="effect-tag">Geste oral</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- THC 180° -->
+            <div class="substance-card thc-low">
+                <div class="substance-header">
+                    <div class="substance-icon">🔵</div>
+                    <div class="substance-title">
+                        <h3>THC — Vapo Bleu</h3>
+                        <div class="config">180°C • Cali US</div>
+                    </div>
+                </div>
+                <div class="substance-body">
+                    <div class="timing-bar">
+                        <div class="timing-item">
+                            <div class="label">Route</div>
+                            <div class="value">Pulmonaire</div>
+                        </div>
+                        <div class="timing-item">
+                            <div class="label">Onset</div>
+                            <div class="value">1-3min</div>
+                        </div>
+                        <div class="timing-item">
+                            <div class="label">Durée</div>
+                            <div class="value">1-2h</div>
+                        </div>
+                    </div>
+                    <div class="effects-section">
+                        <h4>Effets</h4>
+                        <div class="effects-list">
+                            <span class="effect-tag">Focus léger</span>
+                            <span class="effect-tag">Cérébral</span>
+                            <span class="effect-tag">Stimulant</span>
+                            <span class="effect-tag">Créativité</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- THC 230° -->
+            <div class="substance-card thc-high">
+                <div class="substance-header">
+                    <div class="substance-icon">🔴</div>
+                    <div class="substance-title">
+                        <h3>THC — Vapo Rouge</h3>
+                        <div class="config">230°C • Cali US</div>
+                    </div>
+                </div>
+                <div class="substance-body">
+                    <div class="timing-bar">
+                        <div class="timing-item">
+                            <div class="label">Route</div>
+                            <div class="value">Pulmonaire</div>
+                        </div>
+                        <div class="timing-item">
+                            <div class="label">Onset</div>
+                            <div class="value">1-3min</div>
+                        </div>
+                        <div class="timing-item">
+                            <div class="label">Durée</div>
+                            <div class="value">2-4h</div>
+                        </div>
+                    </div>
+                    <div class="effects-section">
+                        <h4>Effets</h4>
+                        <div class="effects-list">
+                            <span class="effect-tag">Anxiolytique</span>
+                            <span class="effect-tag">Décontraction</span>
+                            <span class="effect-tag">Proprioception</span>
+                            <span class="effect-tag">Idéation</span>
+                            <span class="effect-tag">Body high</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- CBD -->
+            <div class="substance-card cbd">
+                <div class="substance-header">
+                    <div class="substance-icon">💧</div>
+                    <div class="substance-title">
+                        <h3>CBD Isolat</h3>
+                        <div class="config">Sublingual • Boiron recommandé</div>
+                    </div>
+                </div>
+                <div class="substance-body">
+                    <div class="timing-bar">
+                        <div class="timing-item">
+                            <div class="label">Route</div>
+                            <div class="value">Sublingual</div>
+                        </div>
+                        <div class="timing-item">
+                            <div class="label">Onset</div>
+                            <div class="value">15-30min</div>
+                        </div>
+                        <div class="timing-item">
+                            <div class="label">Durée</div>
+                            <div class="value">4-6h</div>
+                        </div>
+                    </div>
+                    <div class="effects-section">
+                        <h4>Effets</h4>
+                        <div class="effects-list">
+                            <span class="effect-tag">Anxiolytique</span>
+                            <span class="effect-tag">Anti-inflammatoire</span>
+                            <span class="effect-tag">Fond calme</span>
+                            <span class="effect-tag">Non-psychoactif</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Profil Cali US -->
+        <section class="molecules-section">
+            <h2>🧬 Profil Cali US — Composition estimée</h2>
+            <table class="molecules-table">
+                <thead>
+                    <tr>
+                        <th>Molécule</th>
+                        <th>%</th>
+                        <th>Notes</th>
+                        <th>Extraction</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="molecule-name">THC</td>
+                        <td class="percentage">20-30%</td>
+                        <td>Breeding optimisé puissance</td>
+                        <td>157°C+</td>
+                    </tr>
+                    <tr>
+                        <td class="molecule-name">CBD</td>
+                        <td class="percentage">&lt;1%</td>
+                        <td>Quasi absent (bred out)</td>
+                        <td>160-180°C</td>
+                    </tr>
+                    <tr>
+                        <td class="molecule-name">CBN</td>
+                        <td class="percentage">0.5-2%</td>
+                        <td>Sédatif, augmente si vieilli</td>
+                        <td>185°C+</td>
+                    </tr>
+                    <tr>
+                        <td class="molecule-name">CBG</td>
+                        <td class="percentage">0.5-1%</td>
+                        <td>Précurseur, effets subtils</td>
+                        <td>52°C+</td>
+                    </tr>
+                    <tr>
+                        <td class="molecule-name">Terpènes légers</td>
+                        <td class="percentage">1-2%</td>
+                        <td>Pinène, Limonène → focus, stimulant</td>
+                        <td>155-180°C</td>
+                    </tr>
+                    <tr>
+                        <td class="molecule-name">Terpènes lourds</td>
+                        <td class="percentage">1-3%</td>
+                        <td>Myrcène, Linalol → sédation, corps</td>
+                        <td>200°C+</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        
+        <!-- Usage Guide -->
+        <section class="usage-section">
+            <h2>🎯 Guide d'Usage — Sevrage</h2>
+            <div class="usage-grid">
+                <div class="usage-card">
+                    <h4>Craving aigu</h4>
+                    <p>Hit rapide pour interrompre la boucle de pensée. Timer 20 min.</p>
+                    <span class="tool">Nicotine MTL</span>
+                </div>
+                <div class="usage-card">
+                    <h4>Anxiété de fond</h4>
+                    <p>Effet long, non-psychoactif. Compatible avec travail.</p>
+                    <span class="tool">CBD sublingual</span>
+                </div>
+                <div class="usage-card">
+                    <h4>Focus / Travail</h4>
+                    <p>Cérébral, stimulant léger. Température basse.</p>
+                    <span class="tool">THC 180°C</span>
+                </div>
+                <div class="usage-card">
+                    <h4>Détente / Sommeil</h4>
+                    <p>Corps, décontraction, proprioception. Température haute.</p>
+                    <span class="tool">THC 230°C</span>
+                </div>
+                <div class="usage-card">
+                    <h4>Reset nerveux</h4>
+                    <p>Système nerveux autonome. Gratuit, immédiat.</p>
+                    <span class="tool">Eau froide visage</span>
+                </div>
+                <div class="usage-card">
+                    <h4>Co-régulation</h4>
+                    <p>Présence physique. Le système nerveux se régule à deux.</p>
+                    <span class="tool">Contact humain</span>
+                </div>
+            </div>
+        </section>
+        
+        <footer class="footer">
+            <p>Stack personnel — usage médical informé</p>
+            <p class="date">Janvier 2025</p>
+        </footer>
+    </div>
+</body>
+</html>

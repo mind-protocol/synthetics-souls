@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mind-MCP Architecture Logique</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+            color: #e6edf3;
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #58a6ff, #3fb950);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #8b949e;
+            margin-bottom: 40px;
+        }
+        
+        .version-badge {
+            display: inline-block;
+            background: rgba(56, 139, 253, 0.15);
+            color: #58a6ff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-left: 10px;
+        }
+        
+        section {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        h2 {
+            color: #58a6ff;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        h3 {
+            color: #3fb950;
+            margin: 25px 0 15px 0;
+        }
+        
+        .mermaid {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        th {
+            background: rgba(255, 255, 255, 0.05);
+            color: #8b949e;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+        
+        tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        code {
+            background: rgba(110, 118, 129, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9em;
+        }
+        
+        pre {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        
+        pre code {
+            background: none;
+            padding: 0;
+        }
+        
+        .layer-card {
+            background: rgba(0, 0, 0, 0.2);
+            border-left: 4px solid;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        
+        .layer-card.l0 { border-color: #f97583; }
+        .layer-card.l1 { border-color: #ffa657; }
+        .layer-card.l2 { border-color: #d29922; }
+        .layer-card.l3 { border-color: #3fb950; }
+        .layer-card.l4 { border-color: #58a6ff; }
+        .layer-card.l5 { border-color: #a371f7; }
+        .layer-card.l6 { border-color: #db61a2; }
+        .layer-card.l7 { border-color: #79c0ff; }
+        .layer-card.l8 { border-color: #7ee787; }
+        
+        .layer-card h4 {
+            margin-bottom: 10px;
+        }
+        
+        .layer-card.l0 h4 { color: #f97583; }
+        .layer-card.l1 h4 { color: #ffa657; }
+        .layer-card.l2 h4 { color: #d29922; }
+        .layer-card.l3 h4 { color: #3fb950; }
+        .layer-card.l4 h4 { color: #58a6ff; }
+        .layer-card.l5 h4 { color: #a371f7; }
+        .layer-card.l6 h4 { color: #db61a2; }
+        .layer-card.l7 h4 { color: #79c0ff; }
+        .layer-card.l8 h4 { color: #7ee787; }
+        
+        .toc {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .toc h3 {
+            color: #8b949e;
+            margin-bottom: 15px;
+        }
+        
+        .toc ul {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        
+        .toc a {
+            color: #58a6ff;
+            text-decoration: none;
+        }
+        
+        .toc a:hover {
+            text-decoration: underline;
+        }
+        
+        .formula-box {
+            background: rgba(163, 113, 247, 0.1);
+            border: 1px solid rgba(163, 113, 247, 0.3);
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin: 15px 0;
+            font-family: 'Fira Code', monospace;
+        }
+        
+        .warning-box {
+            background: rgba(210, 153, 34, 0.1);
+            border: 1px solid rgba(210, 153, 34, 0.3);
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin: 15px 0;
+        }
+        
+        .info-box {
+            background: rgba(88, 166, 255, 0.1);
+            border: 1px solid rgba(88, 166, 255, 0.3);
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin: 15px 0;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            color: #8b949e;
+            font-size: 0.9rem;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-button {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #58a6ff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        
+        .nav-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mind-MCP <span class="version-badge">v0.1.0</span></h1>
+        <p class="subtitle">Architecture Logique Complète — Système Cognitif Auto-Calibrant</p>
+        
+        <!-- Table of Contents -->
+        <div class="toc">
+            <h3>📑 Navigation</h3>
+            <ul>
+                <li><a href="#overview">1. Vue d'ensemble</a></li>
+                <li><a href="#layers">2. Layers d'abstraction</a></li>
+                <li><a href="#flux">3. Flux de données</a></li>
+                <li><a href="#components">4. Composants</a></li>
+                <li><a href="#feedback">5. Boucle de feedback</a></li>
+                <li><a href="#interfaces">6. Interfaces</a></li>
+                <li><a href="#states">7. États du système</a></li>
+            </ul>
+        </div>
+        
+        <!-- Section 1: Overview -->
+        <section id="overview">
+            <h2>1. Vue d'ensemble</h2>
+            
+            <p>Le système est une <strong>boucle fermée auto-calibrante</strong> :</p>
+            <ul style="margin: 15px 0 15px 30px;">
+                <li>Les inputs sensoriels et substances alimentent un modèle cognitif</li>
+                <li>Le modèle prédit le comportement</li>
+                <li>Le comportement observé est comparé à la prédiction</li>
+                <li>L'erreur calibre le modèle</li>
+            </ul>
+            
+            <h3>Diagramme Principal</h3>
+            <div class="mermaid">
+flowchart TB
+    subgraph ENV["🌍 ENVIRONNEMENT"]
+        E1[Monde physique]
+        E2[Contexte social]
+    end
+
+    subgraph INPUT["📥 L0: INPUTS"]
+        S1[Sensoriels]
+        S2[Substances]
+        S3[Contexte]
+    end
+
+    subgraph PERCEPT["👁️ L1-4: PERCEPTION"]
+        P1[Features → Patterns → Objets → Concepts]
+    end
+
+    subgraph CORE["🧠 L5: NOYAU COGNITIF"]
+        Q1[QI Vectors]
+        Q2[Personnalité]
+        Q3[Survie]
+        INT[Intégrateur]
+    end
+
+    subgraph PRED["🎯 L6: PRÉDICTION"]
+        PR1[P - comportement]
+    end
+
+    subgraph OUTPUT["📤 L7: OUTPUT"]
+        O1[Comportement effectif]
+    end
+
+    subgraph CALIB["🔄 L8: CALIBRATION"]
+        CA1[Comparateur]
+        CA2[Learning]
+    end
+
+    ENV --> INPUT
+    INPUT --> PERCEPT
+    PERCEPT --> CORE
+    Q1 --> INT
+    Q2 --> INT
+    Q3 --> INT
+    INT --> PRED
+    PRED --> OUTPUT
+    OUTPUT --> ENV
+    OUTPUT --> CA1
+    PR1 --> CA1
+    CA1 --> CA2
+    CA2 -.->|calibre| Q1
+    CA2 -.->|calibre| S2
+            </div>
+        </section>
+        
+        <!-- Section 2: Layers -->
+        <section id="layers">
+            <h2>2. Layers d'Abstraction</h2>
+            
+            <div class="layer-card l0">
+                <h4>Layer 0 — Inputs (Acquisition)</h4>
+                <p><strong>Fonction:</strong> Capturer les données brutes du monde et de l'état interne.</p>
+                <table>
+                    <tr><th>Input</th><th>Hardware</th><th>Signal</th><th>Fréquence</th></tr>
+                    <tr><td>Visuel</td><td>Caméra / Glass</td><td>Frames RGB</td><td>30 fps</td></tr>
+                    <tr><td>Proprioceptif</td><td>IMU / Watch</td><td>Vecteurs 3D</td><td>100 Hz</td></tr>
+                    <tr><td>Substances</td><td>Vape / Bouton</td><td>Events</td><td>On-demand</td></tr>
+                    <tr><td>Self-report</td><td>App UI</td><td>Ratings</td><td>On-demand</td></tr>
+                </table>
+            </div>
+            
+            <div class="layer-card l1">
+                <h4>Layer 1 — Features Brutes (Extraction)</h4>
+                <p><strong>Fonction:</strong> Extraire les caractéristiques de bas niveau.</p>
+                <p>Luminosité, couleurs, edges, volumes, accélérations, courbes pharmacocinétiques...</p>
+            </div>
+            
+            <div class="layer-card l2">
+                <h4>Layer 2 — Patterns (Agrégation)</h4>
+                <p><strong>Fonction:</strong> Regrouper les features en patterns reconnaissables.</p>
+                <p>Formes géométriques, segments parole, gestes, postures, phases de courbes substances...</p>
+            </div>
+            
+            <div class="layer-card l3">
+                <h4>Layer 3 — Objets (Reconnaissance)</h4>
+                <p><strong>Fonction:</strong> Identifier des entités discrètes.</p>
+                <p>Personnes, objets, lieux, actions en cours, états émotionnels visibles...</p>
+            </div>
+            
+            <div class="layer-card l4">
+                <h4>Layer 4 — Concepts (Sémantique)</h4>
+                <p><strong>Fonction:</strong> Mapper sur des catégories significatives.</p>
+                <div class="mermaid">
+flowchart LR
+    subgraph SURVIVAL["Catégories Survie"]
+        SV1["🦁 Prédateur"]
+        SV2["🍎 Nourriture"]
+        SV3["🏠 Abri"]
+        SV4["💕 Partenaire"]
+    end
+    subgraph COGNITIVE["Catégories Cognitives"]
+        CG1["📋 Tâche"]
+        CG2["🎯 Objectif"]
+        CG3["⚠️ Problème"]
+    end
+                </div>
+            </div>
+            
+            <div class="layer-card l5">
+                <h4>Layer 5 — Noyau Cognitif (Intégration)</h4>
+                <p><strong>Fonction:</strong> Combiner toutes les informations pour produire l'état cognitif.</p>
+                <div class="formula-box">
+                    QI_effective[i] = f(QI_base[i], QI_perception[i])<br>
+                    QI_final[i] = QI_effective[i] × global_reduction × sphere_modifiers[i]<br>
+                    cognitive_state = {QI_final[], spheres[], survival_balance, concepts[]}
+                </div>
+            </div>
+            
+            <div class="layer-card l6">
+                <h4>Layer 6 — Prédiction (Décision)</h4>
+                <p><strong>Fonction:</strong> Prédire le comportement le plus probable.</p>
+                <div class="formula-box">
+                    P(action | état) = base_prob × survival_mod × habit_mod × opportunity_mod<br>
+                    predicted_action = argmax(P)
+                </div>
+            </div>
+            
+            <div class="layer-card l7">
+                <h4>Layer 7 — Output (Action)</h4>
+                <p><strong>Fonction:</strong> Exécuter l'action et la rendre observable.</p>
+                <p>Décision → Planning moteur → Mouvement → Comportement observable</p>
+            </div>
+            
+            <div class="layer-card l8">
+                <h4>Layer 8 — Calibration (Apprentissage)</h4>
+                <p><strong>Fonction:</strong> Comparer prédiction et observation, ajuster le modèle.</p>
+                <div class="mermaid">
+flowchart LR
+    P["Prédit"] --> C{"Match?"}
+    O["Observé"] --> C
+    C -->|Non| E["Erreur Δ"]
+    E --> A["Ajustement"]
+    A --> V["Variables\ndu modèle"]
+                </div>
+            </div>
+        </section>
+        
+        <!-- Section 3: Data Flux -->
+        <section id="flux">
+            <h2>3. Flux de Données</h2>
+            
+            <h3>3.1 Flux Forward (Perception → Action)</h3>
+            <div class="mermaid">
+flowchart LR
+    L0["L0\nInputs"] -->|50ms| L1["L1\nFeatures"]
+    L1 -->|100ms| L2["L2\nPatterns"]
+    L2 -->|200ms| L3["L3\nObjets"]
+    L3 -->|100ms| L4["L4\nConcepts"]
+    L4 -->|50ms| L5["L5\nCognition"]
+    L5 -->|100ms| L6["L6\nPrédiction"]
+    L6 -->|var| L7["L7\nAction"]
+            </div>
+            
+            <div class="info-box">
+                <strong>Latence totale cible:</strong> < 600ms du stimulus à la prédiction
+            </div>
+            
+            <h3>3.2 Flux Feedback (Calibration)</h3>
+            <div class="mermaid">
+flowchart RL
+    L7["L7\nAction"] -->|observation| L8["L8\nCalibration"]
+    L8 -->|ajuste QI| L5["L5\nCognition"]
+    L8 -->|ajuste courbes| L0["L0\nSubstances"]
+            </div>
+            
+            <h3>3.3 Fréquences des Boucles</h3>
+            <table>
+                <tr><th>Boucle</th><th>Fréquence</th><th>Description</th></tr>
+                <tr><td>Perception</td><td>10 Hz</td><td>Update features et concepts</td></tr>
+                <tr><td>Cognition</td><td>2 Hz</td><td>Update état cognitif complet</td></tr>
+                <tr><td>Prédiction</td><td>1 Hz</td><td>Nouvelle prédiction comportementale</td></tr>
+                <tr><td>Calibration</td><td>Event-driven</td><td>Quand observation disponible</td></tr>
+                <tr><td>Substances</td><td>0.1 Hz</td><td>Update courbes pharmacocinétiques</td></tr>
+            </table>
+        </section>
+        
+        <!-- Section 4: Components -->
+        <section id="components">
+            <h2>4. Composants Détaillés</h2>
+            
+            <h3>4.1 Pharmacokinetic Engine</h3>
+            <p><strong>Responsabilité:</strong> Calculer les niveaux de substances en temps réel.</p>
+            <div class="formula-box">
+                <strong>Modèle two-compartment:</strong><br><br>
+                dA/dt = -k_abs × A &nbsp;&nbsp;&nbsp;&nbsp;(absorption)<br>
+                dC/dt = k_abs × A - k_elim × C &nbsp;&nbsp;&nbsp;&nbsp;(compartiment central)<br><br>
+                level(t) = dose × bioavailability × (e<sup>-k_elim×t</sup> - e<sup>-k_abs×t</sup>) / (k_abs - k_elim)
+            </div>
+            
+            <h3>4.2 QI Processor</h3>
+            <p><strong>Responsabilité:</strong> Calculer les QI finals à partir des bases et de l'état actuel.</p>
+            <div class="mermaid">
+flowchart LR
+    B["QI Base\n(test)"] --> E["QI Effectif"]
+    P["QI Perception\n(self)"] --> E
+    E --> F["QI Final"]
+    R["Global\nReduction"] --> F
+    S["Sphere\nModifiers"] --> F
+            </div>
+            
+            <h3>4.3 Behavior Predictor</h3>
+            <p><strong>Responsabilité:</strong> Prédire l'action la plus probable.</p>
+            <pre><code>FOR each action in action_space:
+    P(action) = base_probability(action, cognitive_state)
+    P(action) *= survival_modifier(action, survival_balance)
+    P(action) *= habit_modifier(action, action_history)
+    P(action) *= opportunity_modifier(action, active_concepts)
+normalize(P)
+predicted_action = argmax(P)</code></pre>
+            
+            <h3>4.4 Calibration Engine</h3>
+            <p><strong>Responsabilité:</strong> Apprendre des erreurs de prédiction.</p>
+            <pre><code>IF prediction ≠ observation:
+    error = compute_error(prediction, observation)
+    candidates = identify_candidate_variables(error)
+    
+    FOR each var in candidates:
+        adjustment = error × (1 - var.certainty) × explanatory_power
+        var.value += clip(adjustment, -MAX_ADJ, +MAX_ADJ)
+        var.certainty = update_certainty(observation_count)
+    
+    log_calibration(error, adjustments)</code></pre>
+        </section>
+        
+        <!-- Section 5: Feedback Loop -->
+        <section id="feedback">
+            <h2>5. Boucle de Feedback</h2>
+            
+            <h3>Vue Temporelle</h3>
+            <div class="mermaid">
+sequenceDiagram
+    participant ENV as Environnement
+    participant L0_4 as Layers 0-4
+    participant L5_6 as Layers 5-6
+    participant L7 as Layer 7
+    participant L8 as Layer 8
+    
+    loop Chaque 100ms
+        ENV->>L0_4: Signaux
+        L0_4->>L5_6: Concepts
+        L5_6->>L5_6: Prédiction
+    end
+    
+    Note over L5_6: Prédit: "reste assis"
+    
+    ENV->>L0_4: Mouvement détecté
+    L0_4->>L7: Action: "verse whisky"
+    
+    L7->>L8: Observation ≠ Prédiction
+    L8->>L8: Calcul erreur
+    L8->>L5_6: Ajustement variables
+            </div>
+        </section>
+        
+        <!-- Section 6: Interfaces -->
+        <section id="interfaces">
+            <h2>6. Interfaces</h2>
+            
+            <h3>6.1 Input Event</h3>
+            <pre><code>SubstanceIntakeEvent:
+  type: "substance_intake"
+  timestamp: "2025-01-25T15:30:00Z"
+  source: "app_button"
+  payload:
+    substance: "thc"
+    delivery_method: "pulmonary"
+    dose_value: 1
+    temperature_celsius: 230</code></pre>
+            
+            <h3>6.2 Observation Event</h3>
+            <pre><code>ObservationEvent:
+  timestamp: "2025-01-25T15:32:00Z"
+  detection_method: "video_analysis"
+  certainty: 0.85
+  behavior:
+    category: "substance_intake"
+    specific_action: "pour_drink"
+    parameters:
+      substance: "alcohol"</code></pre>
+            
+            <h3>6.3 Calibration Entry</h3>
+            <pre><code>CalibrationEntry:
+  timestamp: "2025-01-25T15:32:05Z"
+  prediction: { action: "remain_seated", confidence: 0.7 }
+  observation: { action: "pour_drink", certainty: 0.85 }
+  error: { type: "wrong_action", magnitude: 0.8 }
+  adjustments:
+    - variable: "survival.preservation.personal"
+      old_value: 0.6
+      new_value: 0.55</code></pre>
+        </section>
+        
+        <!-- Section 7: States -->
+        <section id="states">
+            <h2>7. États du Système</h2>
+            
+            <h3>State Machine Globale</h3>
+            <div class="mermaid">
+stateDiagram-v2
+    [*] --> Initializing
+    Initializing --> Calibrating
+    Calibrating --> Running
+    Running --> Observing
+    Observing --> Comparing
+    Comparing --> Adjusting: Error > threshold
+    Comparing --> Running: OK
+    Adjusting --> Running
+    Running --> Paused
+    Paused --> Running
+            </div>
+            
+            <h3>États des Variables</h3>
+            <div class="mermaid">
+stateDiagram-v2
+    [*] --> Uninitialized
+    Uninitialized --> Estimated
+    Uninitialized --> Measured
+    Estimated --> Calibrated
+    Measured --> Calibrated
+    Calibrated --> Stale
+    Stale --> Measured
+            </div>
+        </section>
+        
+        <!-- Next Steps -->
+        <section>
+            <h2>📋 Documents Suivants</h2>
+            <table>
+                <tr><th>Document</th><th>Contenu</th><th>Status</th></tr>
+                <tr><td>MATH_MODEL.md</td><td>Formules statistiques, distributions, learning</td><td>🔜 À faire</td></tr>
+                <tr><td>APP_ARCHITECTURE.md</td><td>Stack technique, UI/UX, hardware</td><td>🔜 À faire</td></tr>
+                <tr><td>PRIORS_DATABASE.md</td><td>Catalogue des priors comportementaux</td><td>🔜 À faire</td></tr>
+                <tr><td>mind-mcp-schema.yaml</td><td>Structure de données complète</td><td>✅ Fait</td></tr>
+            </table>
+        </section>
+        
+        <footer>
+            <p>Mind-MCP Architecture Logique v0.1.0</p>
+            <p>Draft — Janvier 2025</p>
+        </footer>
+    </div>
+    
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'dark',
+            themeVariables: {
+                primaryColor: '#58a6ff',
+                primaryTextColor: '#e6edf3',
+                primaryBorderColor: '#30363d',
+                lineColor: '#8b949e',
+                secondaryColor: '#21262d',
+                tertiaryColor: '#161b22'
+            }
+        });
+    </script>
+</body>
+</html>

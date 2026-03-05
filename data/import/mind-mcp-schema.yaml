@@ -1,0 +1,920 @@
+# ============================================================================
+# MIND-MCP COGNITIVE ARCHITECTURE SCHEMA
+# Version: 0.1.0
+# Description: Modèle cognitif auto-calibrant avec feedback loop
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# META - Informations sur le modèle et le sujet
+# ----------------------------------------------------------------------------
+meta:
+  schema_version: "0.1.0"
+  schema_name: "mind-mcp-cognitive-architecture"
+  created_at: null  # ISO 8601 datetime
+  updated_at: null  # ISO 8601 datetime
+  
+  subject:
+    id: null  # UUID
+    name: null  # String, optionnel
+    personality_types: []  # Liste: ["HPI", "HTHP", "BPD", "ADHD", "ASD", etc.]
+    
+  calibration:
+    last_calibration_at: null
+    total_calibrations: 0
+    model_confidence: 0.0  # 0-1, confiance globale du modèle
+
+# ----------------------------------------------------------------------------
+# VARIABLE TEMPLATE - Structure commune à toutes les variables mesurables
+# ----------------------------------------------------------------------------
+# Chaque variable dans le modèle suit cette structure:
+#
+# variable_name:
+#   value: <float | null>           # Valeur actuelle
+#   unit: <string>                   # Unité de mesure
+#   range: [min, max]                # Bornes valides
+#   certainty: <float 0-1>           # Degré de certitude
+#   source: <enum>                   # Source de la valeur
+#   timestamp: <datetime | null>     # Dernière mise à jour
+#   history: []                      # Historique optionnel
+#
+# Sources possibles:
+#   - "objective_test"    : Test standardisé (Bacq, WAIS, etc.)
+#   - "hardware_sensor"   : Capteur physique (vape connectée, caméra, etc.)
+#   - "self_report"       : Auto-évaluation du sujet
+#   - "computed"          : Calculé à partir d'autres variables
+#   - "calibrated"        : Ajusté par le système de calibration
+#   - "prior_science"     : Valeur par défaut basée sur littérature
+#   - "estimated"         : Estimation sans source forte
+
+# ----------------------------------------------------------------------------
+# INPUTS - Toutes les entrées du système
+# ----------------------------------------------------------------------------
+inputs:
+
+  # ==========================================================================
+  # SUBSTANCES
+  # ==========================================================================
+  substances:
+    
+    nicotine:
+      config:
+        delivery_method: "pulmonary"  # pulmonary | sublingual | transdermal | oral
+        concentration_mg: null        # mg/ml pour e-liquide
+        device_resistance_ohm: null   # Ω
+        device_power_watts: null      # W
+      
+      pharmacokinetics:
+        onset_seconds: 15
+        peak_minutes: 3
+        half_life_minutes: 120
+        bioavailability: 0.9
+      
+      current_state:
+        level:
+          value: 0.0
+          unit: "relative_0_1"
+          range: [0, 1]
+          certainty: 0.5
+          source: "computed"
+          timestamp: null
+        
+        last_intake:
+          timestamp: null
+          dose_hits: 0
+        
+        receptor_saturation:
+          value: 0.0
+          unit: "percentage"
+          range: [0, 100]
+          certainty: 0.5
+          source: "computed"
+          timestamp: null
+    
+    thc:
+      config:
+        delivery_method: "pulmonary"
+        source_type: "cali_us"  # cali_us | cbd_legal | hash | etc.
+        vaporizer_temp_celsius: null  # 180 ou 230 pour NLR
+      
+      # Profil spécifique au produit (calibré)
+      product_profile:
+        thc_percentage:
+          value: 25.0
+          certainty: 0.7
+          source: "estimated"
+        cbd_percentage:
+          value: 0.5
+          certainty: 0.6
+          source: "estimated"
+        cbn_percentage:
+          value: 2.0
+          certainty: 0.8
+          source: "calibrated"  # Calibré via Aurore
+        cbg_percentage:
+          value: 0.5
+          certainty: 0.5
+          source: "estimated"
+        
+        terpenes:
+          alpha_pinene:
+            percentage: { value: 0.8, certainty: 0.5 }
+            boiling_point_celsius: 155
+            effects: ["focus", "memory", "bronchodilator"]
+          limonene:
+            percentage: { value: 0.6, certainty: 0.5 }
+            boiling_point_celsius: 176
+            effects: ["mood_elevation", "anti_stress", "energy"]
+          beta_caryophyllene:
+            percentage: { value: 0.5, certainty: 0.5 }
+            boiling_point_celsius: 160
+            effects: ["anti_inflammatory", "anxiolytic", "cb2_binding"]
+          myrcene:
+            percentage: { value: 1.0, certainty: 0.6 }
+            boiling_point_celsius: 168
+            effects: ["sedative", "muscle_relaxant", "thc_potentiator"]
+          linalool:
+            percentage: { value: 0.4, certainty: 0.5 }
+            boiling_point_celsius: 198
+            effects: ["strong_sedative", "anti_anxiety", "analgesic"]
+          humulene:
+            percentage: { value: 0.3, certainty: 0.5 }
+            boiling_point_celsius: 198
+            effects: ["anti_inflammatory", "appetite_suppressant"]
+          terpinolene:
+            percentage: { value: 0.2, certainty: 0.5 }
+            boiling_point_celsius: 218
+            effects: ["mild_sedative", "antioxidant"]
+      
+      pharmacokinetics:
+        onset_minutes: 2
+        peak_minutes_low_temp: 12  # 180°C
+        peak_minutes_high_temp: 25  # 230°C (CBN delay)
+        duration_hours_low_temp: 1.5
+        duration_hours_high_temp: 3.5
+        half_life_hours: 4
+        bioavailability: 0.35
+      
+      current_state:
+        level:
+          value: 0.0
+          unit: "relative_0_1"
+          range: [0, 1]
+          certainty: 0.5
+          source: "computed"
+          timestamp: null
+        
+        active_temp_profile: null  # "low_180" | "high_230" | null
+        
+        last_intake:
+          timestamp: null
+          dose_hits: 0
+          temp_celsius: null
+        
+        # Niveaux par composant (pour temp haute vs basse)
+        component_levels:
+          thc: { value: 0.0, certainty: 0.5 }
+          cbn: { value: 0.0, certainty: 0.5 }
+          terpenes_light: { value: 0.0, certainty: 0.5 }  # pinène, limonène
+          terpenes_heavy: { value: 0.0, certainty: 0.5 }  # linalol, myrcène
+    
+    cbd:
+      config:
+        delivery_method: "sublingual"
+        product_type: "isolate"  # isolate | full_spectrum | broad_spectrum
+        brand: null  # "boiron" recommandé
+        concentration_percentage: null
+      
+      pharmacokinetics:
+        onset_minutes: 20
+        peak_minutes: 90
+        duration_hours: 5
+        half_life_hours: 6
+        bioavailability: 0.35  # sublingual
+      
+      current_state:
+        level:
+          value: 0.0
+          unit: "relative_0_1"
+          range: [0, 1]
+          certainty: 0.5
+          source: "computed"
+          timestamp: null
+        
+        last_intake:
+          timestamp: null
+          dose_mg: null
+    
+    # Médicaments / autres substances
+    anxiolytics:
+      oxazepam:  # Aurore
+        config:
+          dose_mg_standard: null
+        current_state:
+          level: { value: 0.0, certainty: 0.5 }
+          last_intake: { timestamp: null, dose_mg: null }
+      
+      prazepam:  # NLR (Lysanxia)
+        config:
+          dose_mg_standard: null
+        current_state:
+          level: { value: 0.0, certainty: 0.5 }
+          last_intake: { timestamp: null, dose_mg: null }
+    
+    # Substances en sevrage (tracking seulement)
+    withdrawal_tracking:
+      cocaine:
+        days_clean: 0
+        last_use: null
+        withdrawal_phase: null  # "acute" | "post_acute" | "resolved"
+      ketamine:
+        days_clean: 0
+        last_use: null
+        withdrawal_phase: null
+
+  # ==========================================================================
+  # SENSORY INPUTS
+  # ==========================================================================
+  sensory:
+    
+    visual:
+      hardware:
+        enabled: false
+        device_type: null  # "google_glass" | "webcam" | "phone_camera"
+        resolution: null
+        fps: null
+      
+      raw_features:
+        luminosity:
+          value: null
+          unit: "lux"
+          range: [0, 100000]
+          certainty: 0.0
+          source: "hardware_sensor"
+        dominant_colors: []  # Liste de {color, percentage}
+        contrast_level: { value: null, certainty: 0.0 }
+      
+      processed_features:
+        edges_detected: { value: null, certainty: 0.0 }
+        forms_recognized: []  # Liste d'objets forme
+        objects_identified: []  # Liste d'objets avec label + confidence
+      
+      conceptual_recognition:
+        # Catégories survie
+        prey_detected: { present: false, certainty: 0.0, details: [] }
+        predator_detected: { present: false, certainty: 0.0, details: [] }
+        food_source_detected: { present: false, certainty: 0.0, details: [] }
+        poison_detected: { present: false, certainty: 0.0, details: [] }
+        shelter_detected: { present: false, certainty: 0.0, details: [] }
+        potential_mate_detected: { present: false, certainty: 0.0, details: [] }
+    
+    auditory:
+      hardware:
+        enabled: false
+        device_type: null  # "microphone"
+      
+      raw_features:
+        volume_db:
+          value: null
+          unit: "decibels"
+          range: [0, 140]
+          certainty: 0.0
+        dominant_frequencies: []  # Hz
+        rhythm_detected: { bpm: null, certainty: 0.0 }
+      
+      processed_features:
+        speech_detected: { present: false, certainty: 0.0 }
+        music_detected: { present: false, certainty: 0.0 }
+        threat_sounds: { present: false, certainty: 0.0 }  # cris, explosions, etc.
+    
+    tactile:
+      hardware:
+        enabled: false
+      
+      features:
+        pressure: { value: null, certainty: 0.0 }
+        texture: { value: null, certainty: 0.0 }
+        pain: { value: null, unit: "vas_0_10", range: [0, 10], certainty: 0.0 }
+    
+    olfactory:
+      hardware:
+        enabled: false
+      
+      features:
+        intensity: { value: null, certainty: 0.0 }
+        category: null  # "pleasant" | "neutral" | "aversive" | "danger"
+    
+    gustatory:
+      hardware:
+        enabled: false
+      
+      features:
+        taste_category: null  # "sweet" | "salty" | "sour" | "bitter" | "umami"
+        intensity: { value: null, certainty: 0.0 }
+    
+    proprioceptive:
+      hardware:
+        enabled: false
+        device_type: null  # "imu" | "accelerometer" | "smart_ring"
+      
+      subsystems:
+        joint_position:
+          description: "Angle et vélocité articulaire"
+          sensor_type: "muscle_spindles"
+          value: { value: null, certainty: 0.0 }
+          qi_subscore: { value: 100, certainty: 0.3, source: "estimated" }
+        
+        muscle_tension:
+          description: "Force et tension musculaire"
+          sensor_type: "golgi_tendon_organs"
+          value: { value: null, certainty: 0.0 }
+          qi_subscore: { value: 100, certainty: 0.3, source: "estimated" }
+        
+        vestibular:
+          description: "Équilibre, accélération, gravité"
+          sensor_type: "inner_ear"
+          value: { value: null, certainty: 0.0 }
+          qi_subscore: { value: 100, certainty: 0.3, source: "estimated" }
+        
+        cutaneous_pressure:
+          description: "Contact, poids, pression"
+          sensor_type: "mechanoreceptors"
+          value: { value: null, certainty: 0.0 }
+          qi_subscore: { value: 100, certainty: 0.3, source: "estimated" }
+        
+        nociception:
+          description: "Douleur - seuil et intensité"
+          sensor_type: "nociceptors"
+          current_pain: { value: 0, unit: "vas_0_10", certainty: 0.5 }
+          threshold: { value: 100, certainty: 0.3 }  # 100 = normal
+        
+        thermoception:
+          description: "Température interne"
+          sensor_type: "thermoreceptors"
+          current_temp_feeling: { value: null, certainty: 0.0 }  # -1 froid, 0 neutre, +1 chaud
+    
+    interoceptive:
+      description: "Perception des états internes du corps"
+      
+      subsystems:
+        cardiac_awareness:
+          description: "Perception du rythme cardiaque"
+          value: { value: null, certainty: 0.0 }
+          qi_subscore: { value: 100, certainty: 0.3 }
+        
+        respiratory_awareness:
+          description: "Perception de la respiration"
+          value: { value: null, certainty: 0.0 }
+          qi_subscore: { value: 100, certainty: 0.3 }
+        
+        hunger:
+          value: { value: null, unit: "relative_0_1", certainty: 0.0 }
+        
+        thirst:
+          value: { value: null, unit: "relative_0_1", certainty: 0.0 }
+        
+        fatigue:
+          value: { value: null, unit: "relative_0_1", certainty: 0.0 }
+        
+        arousal:
+          description: "Niveau d'activation physiologique"
+          value: { value: null, unit: "relative_0_1", certainty: 0.0 }
+
+  # ==========================================================================
+  # ENVIRONMENTAL CONTEXT
+  # ==========================================================================
+  environment:
+    temporal:
+      current_datetime: null
+      time_of_day: null  # "morning" | "afternoon" | "evening" | "night"
+      day_of_week: null
+      days_since_last_sleep: 0
+      hours_awake: 0
+    
+    spatial:
+      location_type: null  # "home" | "work" | "public" | "nature" | "transport"
+      safety_level: { value: null, certainty: 0.0 }  # Évaluation subjective
+      familiarity: { value: null, certainty: 0.0 }
+    
+    social:
+      people_present: 0
+      relationships_present: []  # ["partner", "family", "friend", "stranger", "threat"]
+      social_demand_level: { value: null, certainty: 0.0 }
+    
+    physical:
+      temperature_celsius: null
+      humidity_percentage: null
+      noise_level_db: null
+      light_level_lux: null
+
+# ----------------------------------------------------------------------------
+# CORE - Le noyau combinatoire
+# ----------------------------------------------------------------------------
+core:
+
+  # ==========================================================================
+  # QI VECTORS - Multiples types d'intelligence
+  # ==========================================================================
+  qi_vectors:
+    
+    # Template pour chaque type de QI:
+    # - base: capacité objective (test)
+    # - perception: précision de l'auto-évaluation
+    # - effective: base modulé par perception
+    # - final: effective modulé par état actuel (substances, fatigue, etc.)
+    
+    verbal_comprehension:
+      description: "Compréhension et expression verbale"
+      wais_subtest: "VCI"
+      base:
+        value: null
+        certainty: 0.0
+        source: "pending_bacq"
+        test_date: null
+      perception:
+        value: null
+        certainty: 0.3
+        source: "self_report"
+      effective:
+        value: null
+        certainty: 0.0
+        source: "computed"
+      final:
+        value: null
+        certainty: 0.0
+        source: "computed"
+    
+    perceptual_reasoning:
+      description: "Raisonnement visuo-spatial"
+      wais_subtest: "PRI"
+      base: { value: null, certainty: 0.0, source: "pending_bacq" }
+      perception: { value: null, certainty: 0.3, source: "self_report" }
+      effective: { value: null, certainty: 0.0, source: "computed" }
+      final: { value: null, certainty: 0.0, source: "computed" }
+    
+    working_memory:
+      description: "Mémoire de travail"
+      wais_subtest: "WMI"
+      base: { value: null, certainty: 0.0, source: "pending_bacq" }
+      perception: { value: null, certainty: 0.3, source: "self_report" }
+      effective: { value: null, certainty: 0.0, source: "computed" }
+      final: { value: null, certainty: 0.0, source: "computed" }
+    
+    processing_speed:
+      description: "Vitesse de traitement"
+      wais_subtest: "PSI"
+      base: { value: null, certainty: 0.0, source: "pending_bacq" }
+      perception: { value: null, certainty: 0.3, source: "self_report" }
+      effective: { value: null, certainty: 0.0, source: "computed" }
+      final: { value: null, certainty: 0.0, source: "computed" }
+    
+    arithmetic:
+      description: "Calcul mental"
+      wais_subtest: "Arithmetic"
+      base: { value: null, certainty: 0.0, source: "pending_bacq" }
+      perception: { value: null, certainty: 0.3, source: "self_report" }
+      effective: { value: null, certainty: 0.0, source: "computed" }
+      final: { value: null, certainty: 0.0, source: "computed" }
+    
+    general_knowledge:
+      description: "Culture générale"
+      wais_subtest: "Information"
+      base: { value: null, certainty: 0.0, source: "pending_bacq" }
+      perception: { value: null, certainty: 0.3, source: "self_report" }
+      effective: { value: null, certainty: 0.0, source: "computed" }
+      final: { value: null, certainty: 0.0, source: "computed" }
+    
+    vocabulary:
+      description: "Vocabulaire"
+      wais_subtest: "Vocabulary"
+      base: { value: null, certainty: 0.0, source: "pending_bacq" }
+      perception: { value: null, certainty: 0.3, source: "self_report" }
+      effective: { value: null, certainty: 0.0, source: "computed" }
+      final: { value: null, certainty: 0.0, source: "computed" }
+    
+    # QI non-WAIS mais importants
+    proprioceptive:
+      description: "Intelligence corporelle - agrégat des sous-systèmes"
+      wais_subtest: null
+      base: { value: null, certainty: 0.3, source: "estimated" }
+      perception: { value: null, certainty: 0.3, source: "self_report" }
+      effective: { value: null, certainty: 0.0, source: "computed" }
+      final: { value: null, certainty: 0.0, source: "computed" }
+      # Composé de inputs.sensory.proprioceptive.subsystems.*.qi_subscore
+    
+    emotional:
+      description: "Intelligence émotionnelle"
+      wais_subtest: null
+      base: { value: null, certainty: 0.3, source: "estimated" }
+      perception: { value: null, certainty: 0.3, source: "self_report" }
+      effective: { value: null, certainty: 0.0, source: "computed" }
+      final: { value: null, certainty: 0.0, source: "computed" }
+    
+    social:
+      description: "Intelligence sociale"
+      wais_subtest: null
+      base: { value: null, certainty: 0.3, source: "estimated" }
+      perception: { value: null, certainty: 0.3, source: "self_report" }
+      effective: { value: null, certainty: 0.0, source: "computed" }
+      final: { value: null, certainty: 0.0, source: "computed" }
+    
+    creative:
+      description: "Créativité, pensée divergente"
+      wais_subtest: null
+      base: { value: null, certainty: 0.3, source: "estimated" }
+      perception: { value: null, certainty: 0.3, source: "self_report" }
+      effective: { value: null, certainty: 0.0, source: "computed" }
+      final: { value: null, certainty: 0.0, source: "computed" }
+    
+    # Agrégat global
+    global:
+      description: "QI global - moyenne pondérée"
+      base: { value: null, certainty: 0.0, source: "computed" }
+      perception: { value: null, certainty: 0.0, source: "computed" }
+      effective: { value: null, certainty: 0.0, source: "computed" }
+      final: { value: null, certainty: 0.0, source: "computed" }
+
+  # ==========================================================================
+  # PERSONALITY SPHERES - État dynamique de la personnalité
+  # ==========================================================================
+  personality:
+    
+    # Types de personnalité (statiques, diagnostiqués)
+    types:
+      primary: null  # "HPI" | "HTHP" | "BPD" | "ADHD" | "ASD" | "NPD" | etc.
+      secondary: []  # Comorbidités
+      
+      hpi:
+        diagnosed: false
+        diagnosis_date: null
+        certainty: 0.0
+      
+      hthp:  # Haut Potentiel Émotionnel / Hypersensibilité
+        diagnosed: false
+        diagnosis_date: null
+        certainty: 0.0
+      
+      bpd:  # Borderline Personality Disorder
+        diagnosed: false
+        diagnosis_date: null
+        certainty: 0.0
+      
+      adhd:
+        diagnosed: false
+        diagnosis_date: null
+        subtype: null  # "inattentive" | "hyperactive" | "combined"
+        certainty: 0.0
+      
+      asd:  # Autism Spectrum
+        diagnosed: false
+        diagnosis_date: null
+        certainty: 0.0
+    
+    # Sphères dynamiques (état actuel)
+    spheres:
+      security:
+        description: "Sentiment de sécurité perçue"
+        value:
+          value: null
+          unit: "percentage_0_100"
+          range: [0, 100]
+          certainty: 0.3
+          source: "self_report"
+        threshold_danger: 30  # En dessous = mode survie activé
+        modulates: ["decision_making", "risk_taking", "social_approach"]
+      
+      physical_energy:
+        description: "Énergie physique disponible"
+        value:
+          value: null
+          unit: "percentage_0_100"
+          range: [0, 100]
+          certainty: 0.3
+          source: "self_report"
+        threshold_exhaustion: 20
+        modulates: ["action_capacity", "motor_precision", "endurance"]
+      
+      mental_energy:
+        description: "Énergie mentale / cognitive disponible"
+        value:
+          value: null
+          unit: "percentage_0_100"
+          range: [0, 100]
+          certainty: 0.3
+          source: "self_report"
+        threshold_exhaustion: 20
+        modulates: ["all_qi_vectors", "decision_quality", "impulse_control"]
+      
+      action:
+        description: "Capacité d'action / initiative"
+        value:
+          value: null
+          unit: "percentage_0_100"
+          range: [0, 100]
+          certainty: 0.3
+          source: "self_report"
+        threshold_paralysis: 15
+        modulates: ["behavioral_output", "response_latency"]
+    
+    # Identification du vecteur manquant
+    deficit_analysis:
+      lowest_sphere: null  # Identifié automatiquement
+      deficit_magnitude: null  # Écart par rapport aux autres
+      compensation_active: false  # Le sujet compense-t-il ?
+      compensation_strategy: null  # Comment ?
+
+  # ==========================================================================
+  # SURVIVAL STRATEGIES - Stratégies de survie
+  # ==========================================================================
+  survival_strategies:
+    
+    preservation:
+      description: "Stratégies de maintien en vie"
+      
+      personal:
+        description: "Survie individuelle"
+        value:
+          value: null
+          unit: "relative_0_1"
+          range: [0, 1]
+          certainty: 0.3
+          source: "self_report"
+        components:
+          self_care: { value: null, certainty: 0.3 }
+          risk_avoidance: { value: null, certainty: 0.3 }
+          health_maintenance: { value: null, certainty: 0.3 }
+      
+      intergenerational:
+        description: "Survie via descendants / attachement"
+        value:
+          value: null
+          unit: "relative_0_1"
+          range: [0, 1]
+          certainty: 0.3
+          source: "self_report"
+        components:
+          attachment_bonds: { value: null, certainty: 0.3 }
+          protective_behaviors: { value: null, certainty: 0.3 }
+          nurturing_drive: { value: null, certainty: 0.3 }
+      
+      collective:
+        description: "Survie du groupe d'appartenance"
+        value:
+          value: null
+          unit: "relative_0_1"
+          range: [0, 1]
+          certainty: 0.3
+          source: "self_report"
+    
+    destruction:
+      description: "Pulsions destructrices (monitoring, pas jugement)"
+      
+      targeted_person:
+        description: "Envie de nuire à une personne spécifique"
+        value:
+          value: 0.0
+          unit: "relative_0_1"
+          range: [0, 1]
+          certainty: 0.5
+          source: "self_report"
+        current_target: null  # Optionnel, si le sujet veut tracker
+        intensity: "none"  # "none" | "ideation" | "planning" | "urge"
+      
+      targeted_group:
+        description: "Envie de nuire à un groupe spécifique"
+        value:
+          value: 0.0
+          unit: "relative_0_1"
+          range: [0, 1]
+          certainty: 0.5
+          source: "self_report"
+        current_target: null
+        intensity: "none"
+      
+      global:
+        description: "Misanthropie / envie de destruction totale"
+        value:
+          value: 0.0
+          unit: "relative_0_1"
+          range: [0, 1]
+          certainty: 0.5
+          source: "self_report"
+        intensity: "none"
+      
+      self_destruction:
+        description: "Auto-destruction / idéation suicidaire"
+        value:
+          value: 0.0
+          unit: "relative_0_1"
+          range: [0, 1]
+          certainty: 0.5
+          source: "self_report"
+        intensity: "none"  # "none" | "passive" | "active_ideation" | "planning"
+        # ALERT: Si > 0.3 ou intensity != "none", alerter système de support
+
+  # ==========================================================================
+  # GLOBAL REDUCTION - Facteur de réduction globale
+  # ==========================================================================
+  global_reduction:
+    description: "Facteur multiplicatif global affectant tous les QI finals"
+    
+    value:
+      value: 1.0  # 1.0 = pas de réduction, 0.5 = 50% des capacités
+      unit: "multiplier"
+      range: [0, 1.5]  # Peut aller au-dessus de 1 en état de flow
+      certainty: 0.3
+      source: "computed"
+    
+    contributing_factors:
+      fatigue: { weight: 0.3, current_impact: 0.0 }
+      substance_impairment: { weight: 0.25, current_impact: 0.0 }
+      emotional_distress: { weight: 0.2, current_impact: 0.0 }
+      physical_discomfort: { weight: 0.15, current_impact: 0.0 }
+      environmental_stress: { weight: 0.1, current_impact: 0.0 }
+    
+    # États spéciaux
+    flow_state:
+      active: false
+      multiplier: 1.2  # Boost quand en flow
+
+# ----------------------------------------------------------------------------
+# COMPUTATION - Règles de calcul
+# ----------------------------------------------------------------------------
+computation:
+  
+  qi_effective_formula:
+    description: "Comment calculer QI effectif à partir de base et perception"
+    # Hypothèses à tester:
+    current_formula: "multiplicative"  # | "min" | "quadratic_penalty"
+    formulas:
+      multiplicative: "base * (perception / 100)"
+      min: "min(base, perception)"
+      quadratic_penalty: "base - (base - perception)^2 / 100"
+  
+  qi_final_formula:
+    description: "Comment calculer QI final"
+    current_formula: "effective * global_reduction * sphere_modifier"
+    
+    sphere_modifier_rules:
+      - condition: "mental_energy < 20"
+        effect: "qi_final *= 0.6"
+      - condition: "security < 30"
+        effect: "qi_final *= 0.8"  # Mode survie = moins de cognition haute
+  
+  substance_curves:
+    description: "Courbes pharmacocinétiques"
+    model_type: "two_compartment"  # Absorption + élimination
+    # Formule: level(t) = dose * bioavailability * (e^(-k_elim * t) - e^(-k_abs * t))
+
+# ----------------------------------------------------------------------------
+# PRIORS - Contraintes de la science comportementale
+# ----------------------------------------------------------------------------
+priors:
+  
+  behavioral_science:
+    - id: "thc_decision_latency"
+      description: "THC augmente la latence de décision"
+      condition:
+        variable: "inputs.substances.thc.current_state.level.value"
+        operator: ">"
+        threshold: 0.3
+      effect:
+        target: "core.qi_vectors.processing_speed.final"
+        operation: "multiply"
+        factor: 0.85
+      certainty: 0.8
+      source: "literature"
+    
+    - id: "thc_creativity_boost"
+      description: "THC peut booster créativité à dose modérée"
+      condition:
+        variable: "inputs.substances.thc.current_state.level.value"
+        operator: "between"
+        range: [0.2, 0.5]
+      effect:
+        target: "core.qi_vectors.creative.final"
+        operation: "multiply"
+        factor: 1.15
+      certainty: 0.6
+      source: "literature"
+    
+    - id: "cbn_sedation"
+      description: "CBN augmente sédation, réduit vigilance"
+      condition:
+        variable: "inputs.substances.thc.current_state.component_levels.cbn.value"
+        operator: ">"
+        threshold: 0.2
+      effect:
+        target: "core.qi_vectors.processing_speed.final"
+        operation: "multiply"
+        factor: 0.9
+      certainty: 0.7
+      source: "calibrated"  # Confirmé via Aurore
+    
+    - id: "low_security_heuristics"
+      description: "Sécurité basse = décisions heuristiques, pas analytiques"
+      condition:
+        variable: "core.personality.spheres.security.value.value"
+        operator: "<"
+        threshold: 30
+      effect:
+        target: "core.qi_vectors.perceptual_reasoning.final"
+        operation: "multiply"
+        factor: 0.7
+      certainty: 0.75
+      source: "literature"
+    
+    - id: "mental_exhaustion_all_qi"
+      description: "Énergie mentale basse affecte tous les QI"
+      condition:
+        variable: "core.personality.spheres.mental_energy.value.value"
+        operator: "<"
+        threshold: 20
+      effect:
+        target: "core.global_reduction.value.value"
+        operation: "multiply"
+        factor: 0.6
+      certainty: 0.85
+      source: "literature"
+    
+    - id: "nicotine_short_focus"
+      description: "Nicotine améliore focus à court terme"
+      condition:
+        variable: "inputs.substances.nicotine.current_state.level.value"
+        operator: "between"
+        range: [0.3, 0.7]
+      effect:
+        target: "core.qi_vectors.working_memory.final"
+        operation: "multiply"
+        factor: 1.1
+      certainty: 0.7
+      source: "literature"
+    
+    - id: "withdrawal_cognitive_impact"
+      description: "Sevrage actif réduit capacités cognitives"
+      condition:
+        variable: "inputs.substances.withdrawal_tracking.ketamine.withdrawal_phase"
+        operator: "=="
+        value: "acute"
+      effect:
+        target: "core.global_reduction.value.value"
+        operation: "multiply"
+        factor: 0.85
+      certainty: 0.75
+      source: "literature"
+
+# ----------------------------------------------------------------------------
+# CALIBRATION - Système d'apprentissage
+# ----------------------------------------------------------------------------
+calibration:
+  
+  settings:
+    auto_calibrate: true
+    min_observations_before_adjust: 3
+    max_adjustment_per_iteration: 0.1  # 10% max
+    certainty_weighted: true  # Ajuster plus les variables basse certitude
+  
+  history:
+    # Liste des calibrations effectuées
+    # Chaque entrée:
+    # - timestamp
+    # - predicted_behavior
+    # - observed_behavior
+    # - error_magnitude
+    # - variables_adjusted: [{variable, old_value, new_value, adjustment_reason}]
+    entries: []
+  
+  pending_observations:
+    # Observations en attente de traitement
+    entries: []
+  
+  model_performance:
+    total_predictions: 0
+    correct_predictions: 0
+    accuracy: null
+    mean_absolute_error: null
+
+# ----------------------------------------------------------------------------
+# OUTPUT - Prédictions et observations
+# ----------------------------------------------------------------------------
+output:
+  
+  current_prediction:
+    timestamp: null
+    predicted_behavior:
+      category: null  # "approach_food" | "avoid_threat" | "seek_rest" | etc.
+      specific_action: null
+      confidence: 0.0
+    contributing_factors: []  # Liste des variables qui ont le plus influencé
+  
+  observed_behavior:
+    timestamp: null
+    behavior:
+      category: null
+      specific_action: null
+      detection_method: null  # "video_analysis" | "self_report" | "sensor"
+      certainty: 0.0
+  
+  comparison:
+    prediction_matches_observation: null
+    error_magnitude: null
+    error_direction: null  # "overpredicted" | "underpredicted" | "wrong_category"
