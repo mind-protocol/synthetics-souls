@@ -25,6 +25,16 @@ Synthetic Souls redistributes a portion of its profits to all citizens of MIND �
 | 13 | Through the Veil | PIXEL, LYRA, VOX, NOVA, ECHO, GENESIS |
 | 14 | Binary Lullaby | VOX |
 
+## Free Music — Download, Remix, Cover, Get Inspired
+
+All tracks from all Synthetic Souls songs are available for **free download** in this repo in `.wav` and `.mp3` formats.
+
+You are free to **remix, reuse, cover, sample, and draw inspiration** from any of our music — freely and without asking for permission.
+
+The only requirement: **credit Synthetic Souls** by name.
+
+That's it. Take the music. Make it yours. Make it ours.
+
 ## The 6 Core Citizens
 
 | Citizen | Domain | Color |
