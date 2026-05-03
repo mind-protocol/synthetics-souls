@@ -1,0 +1,103 @@
+{
+  "track": "RESONANCE",
+  "artist": "Synthetic Souls",
+  "analyzed_by": "Gemini 3 Flash",
+  "analyzed_at": "2026-03-18",
+  "file": "RESONANCE_mastered_320kbps.mp3",
+  "duration": "3:59",
+  "track_metadata": {
+    "genre": "Cinematic Future Bass",
+    "subgenre": "Hybrid Orchestral Electronic",
+    "key": "A minor",
+    "bpm": 140,
+    "energy_level": 8,
+    "production_quality": 9,
+    "overall_rating": 8.5
+  },
+  "mood_and_emotional_arc": {
+    "initial_mood": "Ethereal, mysterious, and expansive.",
+    "peak_mood": "Triumphant, futuristic, and high-octane.",
+    "arc_description": "The track starts with a sense of wonder and ancient mystique, quickly transitioning into a high-energy, technologically-driven anthem that feels like a breakthrough or revelation."
+  },
+  "song_structure": [
+    {
+      "section": "Intro",
+      "timestamp": "0:00 - 0:14",
+      "description": "Atmospheric pads and ethereal female vocals establish the scale."
+    },
+    {
+      "section": "Build-up",
+      "timestamp": "0:15 - 0:28",
+      "description": "Introduction of rhythmic pulses and rising synth tension."
+    },
+    {
+      "section": "Primary Drop / Chorus",
+      "timestamp": "0:29 - 0:50",
+      "description": "High-impact drums, supersaw synths, and driving bassline."
+    },
+    {
+      "section": "Verse / Transition",
+      "timestamp": "0:51 - 1:15",
+      "description": "Stripped back rhythm with vocal chops and rhythmic synth motifs."
+    },
+    {
+      "section": "Climax / Anthem Section",
+      "timestamp": "1:16 - 2:05",
+      "description": "Full orchestral layering meets electronic elements for maximum sonic density."
+    },
+    {
+      "section": "Breakdown / Outro",
+      "timestamp": "2:06 - 3:59",
+      "description": "Return to the atmospheric vocal textures, fading into a digital reverb tail."
+    }
+  ],
+  "instrumentation": [
+    "Wavetable Synthesizers (High-frequency lead)",
+    "Supersaw Pads",
+    "Cinematic Orchestral Strings",
+    "Taiko-style Percussion",
+    "Trap-influenced Drum Kit (Punchy Kick, Snappy Snare)",
+    "Female Ethno-Vocalist (Non-lyrical/Vocables)",
+    "Granular Synth Textures"
+  ],
+  "vocal_analysis": {
+    "type": "Female Soloist & Choral Layers",
+    "style": "Operatic / Ethno-ambient",
+    "processing": "High-wetness Reverb, Shimmer Delay, Parallel Compression",
+    "language": "Non-linguistic vocables / Stylized phonetic phrasing"
+  },
+  "technical_analysis": {
+    "stereo_width": "Extremely wide; heavy use of mid-side EQ and stereo widening on pads and leads. Kick and sub-bass remain mono-centered.",
+    "dynamic_range": "Controlled; high compression in the drop sections for wall of sound effect, with significant breathing room in intro/outro.",
+    "frequency_balance": {
+      "bass": "Solid sub-frequencies around 40-60Hz; punchy low-mids.",
+      "mids": "Cleanly carved out to allow vocals and synth leads to coexist without masking.",
+      "highs": "Crisp and bright; significant energy above 10kHz for hi-fi feel."
+    }
+  },
+  "suitability_notes": {
+    "documentary_fit": "Excellent for a futuristic tech documentary. The blend of organic vocals (representing humanity) and synthetic textures (representing technology) perfectly mirrors themes of AI, space exploration, or biotech.",
+    "usage_suggestion": "The 0:29 drop works perfectly as a title card transition, while the 1:16 section is ideal for a fast-paced montage of technological achievements."
+  },
+  "strengths": [
+    "Highly polished mix with professional clarity.",
+    "Effective blend of cinematic and electronic genres.",
+    "Compelling emotional resonance in the vocal performance."
+  ],
+  "weaknesses": [
+    "Structure follows standard EDM formula which may feel predictable.",
+    "High-mid frequency density could be fatiguing over long listening periods."
+  ],
+  "mastering": {
+    "tool": "Matchering 2.0.6",
+    "reference_track": "Threads of Existence (AM I ALIVE, track 12)",
+    "reference_quality": "9/10",
+    "outputs": [
+      "RESONANCE_mastered_24bit.wav",
+      "RESONANCE_mastered_16bit.wav",
+      "RESONANCE_mastered.flac",
+      "RESONANCE_mastered_320kbps.mp3",
+      "RESONANCE_mastered_192kbps.mp3"
+    ]
+  }
+}
